@@ -52,6 +52,9 @@ const App: React.FC = () => {
             setAiResult(result);
             setIsLoadingInsight(false);
             setStage(AppStage.RESULT);
+          }).catch(() => {
+            setIsLoadingInsight(false);
+            setStage(AppStage.RESULT);
           });
         }
       }
@@ -67,28 +70,27 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen relative flex flex-col items-center p-5 sm:p-12 overflow-y-auto scroll-hide">
+    <div className="min-h-screen relative flex flex-col items-center p-4 sm:p-12 overflow-y-auto scroll-hide">
       <ZenBackground />
 
-      <header className="text-center mt-2 mb-6 animate-fade-in ink-fade-in">
-        <h1 className="text-3xl sm:text-5xl font-bold tracking-[0.3em] text-[#d4af37] mb-2">观音灵签</h1>
-        <p className="text-[10px] sm:text-base text-gray-400 font-light tracking-widest opacity-80">
+      <header className="text-center mt-4 mb-8 animate-fade-in ink-fade-in">
+        <h1 className="text-4xl sm:text-5xl font-bold tracking-[0.3em] text-[#d4af37] mb-2">观音灵签</h1>
+        <p className="text-[10px] sm:text-base text-gray-500 font-light tracking-widest">
           「 一方签文，千载智慧，照见古今人生路 」
         </p>
-        <div className="w-12 h-[1px] bg-[#d4af37]/30 mx-auto mt-4"></div>
       </header>
 
       <main className="w-full max-w-lg flex flex-col items-center">
         
         {stage === AppStage.INIT && (
-          <div className="flex flex-col items-center animate-fade-in ink-fade-in mt-10">
-            <div className="text-center text-gray-300 space-y-4 mb-12">
-              <p className="text-lg font-light tracking-widest">请阖目观想，</p>
-              <p className="text-lg font-light tracking-widest">心中默念所求之事。</p>
+          <div className="flex flex-col items-center animate-fade-in ink-fade-in mt-10 px-4">
+            <div className="text-center text-gray-300 space-y-4 mb-16">
+              <p className="text-xl font-light tracking-[0.2em]">请阖目观想</p>
+              <p className="text-xl font-light tracking-[0.2em]">心中默念所求之事</p>
             </div>
             <button
               onClick={handleStartDraw}
-              className="px-12 py-4 bg-[#8b0000] text-white rounded-full text-lg tracking-[0.2em] shadow-2xl hover:bg-[#a00000] transition-all transform hover:scale-105 active:scale-95 border-b-4 border-[#5a0000] font-bold"
+              className="px-14 py-4 bg-[#8b0000] text-white rounded-full text-lg tracking-[0.5em] shadow-2xl hover:bg-[#a00000] transition-all transform hover:scale-105 active:scale-95 border-b-4 border-[#5a0000] font-bold"
             >
               至诚求签
             </button>
@@ -98,24 +100,21 @@ const App: React.FC = () => {
         {stage === AppStage.SHAKING && (
           <div className="flex flex-col items-center space-y-12 py-10 animate-fade-in">
             <TraditionalTube isShaking={!showStick} showStick={showStick} />
-            <p className="text-[#d4af37] animate-pulse tracking-[0.2em] text-base font-light">
-              {showStick ? '灵签已现，待圣杯确之' : '签筒摇动，机缘感应中...'}
+            <p className="text-[#d4af37] animate-pulse tracking-[0.3em] text-lg font-light">
+              {showStick ? '灵签已现' : '正在感应机缘'}
             </p>
           </div>
         )}
 
         {stage === AppStage.CONFIRMING && (
-          <div className="w-full text-center space-y-4 animate-fade-in ink-fade-in">
-            <h2 className="text-xl text-[#d4af37] tracking-[0.2em] font-medium">掷筊确认</h2>
-            <p className="text-gray-400 text-xs tracking-widest opacity-70">
-              获得「圣杯」方可得其解。
-            </p>
+          <div className="w-full text-center space-y-4 animate-fade-in ink-fade-in px-4">
+            <h2 className="text-xl text-[#d4af37] tracking-[0.4em] font-medium mb-8">掷筊确认</h2>
             
             <DivinationBlocks status={blockStatus} isAnimating={isThrowing} />
 
-            <div className="h-16 flex items-center justify-center">
+            <div className="h-20 flex items-center justify-center">
               {blockStatus !== BlockStatus.UNTHROWN && !isThrowing && (
-                <div className={`text-base font-bold tracking-widest px-4 py-2 rounded-full bg-black/20 ${blockStatus === BlockStatus.HOLY ? 'text-green-500' : 'text-red-400'}`}>
+                <div className={`text-base font-bold tracking-[0.2em] px-6 py-2 rounded-full bg-black/40 border ${blockStatus === BlockStatus.HOLY ? 'text-green-400 border-green-900/50' : 'text-red-400 border-red-900/50'}`}>
                   {blockStatus === BlockStatus.HOLY && "圣杯 · 阴阳和合，此签属尔"}
                   {blockStatus === BlockStatus.SMILE && "笑杯 · 心意未诚，请再掷一次"}
                   {blockStatus === BlockStatus.YIN && "阴杯 · 时机未至，请再掷一次"}
@@ -127,69 +126,89 @@ const App: React.FC = () => {
               <button
                 onClick={handleThrowBlocks}
                 disabled={isThrowing}
-                className="px-14 py-3 bg-[#d4af37] text-black rounded-full text-base font-bold tracking-[0.2em] shadow-xl hover:bg-[#eec643] transition-all disabled:opacity-50 border-b-4 border-[#b3952f]"
+                className="px-14 py-4 bg-[#d4af37] text-black rounded-full text-base font-bold tracking-[0.3em] shadow-xl hover:bg-[#eec643] transition-all disabled:opacity-50 border-b-4 border-[#b3952f] mt-4"
               >
                 {blockStatus === BlockStatus.UNTHROWN ? '掷 筊' : '再 掷'}
               </button>
             ) : (
-              <div className="text-[#d4af37] animate-pulse py-3 tracking-[0.3em] text-sm">正在转译禅意...</div>
+              <div className="flex flex-col items-center gap-3">
+                <div className="w-6 h-6 border-2 border-[#d4af37] border-t-transparent rounded-full animate-spin"></div>
+                <div className="text-[#d4af37] animate-pulse tracking-[0.4em] text-sm font-light">正在由 AI 进行解签...</div>
+              </div>
             )}
           </div>
         )}
 
         {stage === AppStage.RESULT && currentLottery && aiResult && (
-          <div className="w-full max-w-md bg-[#fdfaf1] paper-texture rounded-sm shadow-2xl p-6 sm:p-10 text-gray-800 animate-fade-in ink-fade-in relative mb-10 border border-[#d4af37]/20">
-            <div className="absolute top-0 right-6 w-7 h-10 bg-red-700/90 rounded-b-sm flex items-center justify-center text-white text-[10px] font-bold shadow-sm">
-               {currentLottery.type}
+          <div className="w-full max-w-md bg-[#fdfaf1] paper-texture rounded-sm shadow-2xl p-6 sm:p-10 text-gray-800 animate-fade-in ink-fade-in relative mb-12 border border-[#d4af37]/10">
+            {/* 签级角标 */}
+            <div className="absolute top-0 right-6 w-8 h-12 bg-[#881f1c] rounded-b-sm flex items-center justify-center text-white text-[12px] font-bold shadow-md z-10">
+               {currentLottery.type.slice(0,2)}
             </div>
 
-            <h2 className="text-2xl sm:text-3xl text-center font-bold text-red-900 border-b border-red-900/10 pb-4 mb-6 tracking-tight sm:tracking-widest leading-snug">
-              第 {currentLottery.id} 签 <span className="mx-1 opacity-30">·</span> {currentLottery.title}
-            </h2>
+            {/* 标题部分 */}
+            <div className="text-center mb-10 pt-4">
+              <div className="text-[10px] tracking-[0.8em] text-red-900/30 font-bold mb-3 uppercase">第 {currentLottery.id} 签</div>
+              <h2 className="text-3xl sm:text-4xl font-bold text-red-900 tracking-[0.2em] leading-tight">
+                {currentLottery.title}
+              </h2>
+              <div className="w-10 h-[1px] bg-red-900/10 mx-auto mt-8"></div>
+            </div>
 
-            <div className="space-y-6">
-              <section>
-                <h3 className="text-[10px] uppercase tracking-[0.2em] text-red-800/60 font-bold mb-3 flex items-center gap-2">
-                  <span className="w-1 h-1 bg-red-800 rounded-full"></span> 诗曰
+            <div className="space-y-10">
+              {/* 诗曰部分 */}
+              <section className="text-center">
+                <h3 className="text-[10px] tracking-[0.5em] text-red-800/40 font-bold mb-6 flex justify-center items-center gap-2">
+                  <span className="w-1 h-1 bg-red-800/10 rounded-full"></span> 诗 曰 <span className="w-1 h-1 bg-red-800/10 rounded-full"></span>
                 </h3>
-                <p className="text-lg sm:text-2xl leading-relaxed text-center font-serif tracking-widest text-gray-900 px-2 font-bold italic">
+                <p className="text-2xl sm:text-3xl leading-[2.2] font-serif tracking-[0.25em] text-gray-900 px-2 font-medium italic">
                   {currentLottery.poetry}
                 </p>
               </section>
 
-              <div className="grid grid-cols-2 gap-3">
-                 <div className="bg-gray-800/5 p-3 rounded-sm border border-gray-200/50">
-                   <h4 className="text-[9px] uppercase tracking-widest text-gray-500 font-bold mb-1">诗意</h4>
-                   <p className="text-[11px] sm:text-xs text-gray-700 leading-normal">{currentLottery.meaning}</p>
+              {/* 传统解签 */}
+              <div className="grid grid-cols-2 gap-4 border-y border-dashed border-red-900/10 py-8">
+                 <div className="bg-[#f0ece2]/30 p-4 rounded-sm">
+                   <h4 className="text-[10px] tracking-[0.3em] text-gray-400 font-bold mb-2">诗意</h4>
+                   <p className="text-xs text-gray-700 leading-relaxed">{currentLottery.meaning}</p>
                  </div>
-                 <div className="bg-gray-800/5 p-3 rounded-sm border border-gray-200/50">
-                   <h4 className="text-[9px] uppercase tracking-widest text-gray-500 font-bold mb-1">解曰</h4>
-                   <p className="text-[11px] sm:text-xs text-gray-700 leading-normal">{currentLottery.explanation}</p>
+                 <div className="bg-[#f0ece2]/30 p-4 rounded-sm">
+                   <h4 className="text-[10px] tracking-[0.3em] text-gray-400 font-bold mb-2">解曰</h4>
+                   <p className="text-xs text-gray-700 leading-relaxed">{currentLottery.explanation}</p>
                  </div>
               </div>
 
-              {/* 深度解签展示 */}
-              <section className="border-t border-dashed border-red-900/20 pt-5">
-                <h3 className="text-[10px] uppercase tracking-[0.2em] text-red-800/60 font-bold mb-4 flex items-center gap-2">
-                  <span className="w-1 h-1 bg-red-800 rounded-full"></span> 各项详解
-                </h3>
-                <div className="grid grid-cols-1 gap-4">
+              {/* 各项详解 - 重新设计的 Seal Badge 布局 */}
+              <section className="pt-2">
+                <h3 className="text-[10px] tracking-[0.5em] text-red-800/40 font-bold mb-8 text-center">各 项 详 解</h3>
+                <div className="space-y-8">
                   {aiResult.categories.map((cat, idx) => (
-                    <div key={idx} className="flex gap-3">
-                      <div className="flex-none w-10 h-10 rounded-full bg-red-900/5 border border-red-900/10 flex items-center justify-center text-[10px] font-bold text-red-900">
-                        {cat.label}
+                    <div key={idx} className="group flex items-start gap-5 animate-fade-in" style={{ animationDelay: `${idx * 0.1}s` }}>
+                      {/* 印章式标签 */}
+                      <div className="flex-none flex flex-col items-center">
+                        <div className="w-10 h-10 bg-[#881f1c] text-white flex items-center justify-center rounded-sm shadow-sm relative">
+                           <span className="text-xs font-bold tracking-tighter leading-none">{cat.label}</span>
+                           {/* 装饰边角 */}
+                           <div className="absolute top-0.5 left-0.5 right-0.5 bottom-0.5 border border-white/20 rounded-[1px]"></div>
+                        </div>
+                        <div className="w-[1px] h-full bg-red-900/10 mt-2 flex-1"></div>
                       </div>
-                      <div className="flex-1 text-[11px] sm:text-xs text-gray-700 leading-relaxed border-b border-gray-100 pb-2">
-                        {cat.content}
+                      
+                      {/* 解签内容 */}
+                      <div className="flex-1">
+                        <p className="text-[13px] sm:text-sm text-gray-800 leading-[1.8] font-light text-justify">
+                          {cat.content}
+                        </p>
                       </div>
                     </div>
                   ))}
                 </div>
               </section>
 
-              <section className="bg-red-900/5 p-4 rounded-sm border border-red-900/10 mt-4">
-                 <h3 className="text-[10px] uppercase tracking-[0.2em] text-red-800/60 font-bold mb-2">禅悟 · 当下启示</h3>
-                <p className="text-sm text-gray-800 leading-relaxed font-light italic">
+              {/* 禅悟启示 */}
+              <section className="bg-red-900/[0.03] p-8 rounded-sm border border-red-900/5 mt-4 shadow-inner">
+                <h3 className="text-[10px] tracking-[0.5em] text-red-800/50 font-bold mb-4 text-center">禅 悟 · 当 下 启 示</h3>
+                <p className="text-base text-gray-800 leading-[2] font-light italic text-justify">
                   {aiResult.zenInsight}
                 </p>
               </section>
@@ -197,7 +216,7 @@ const App: React.FC = () => {
 
             <button
               onClick={handleReset}
-              className="w-full mt-8 py-3.5 border border-red-900 text-red-900 rounded-sm font-bold tracking-[0.3em] hover:bg-red-900 hover:text-white transition-all text-xs active:bg-red-950 shadow-sm"
+              className="w-full mt-12 py-5 bg-transparent border border-red-900/30 text-red-900 rounded-sm font-bold tracking-[0.6em] hover:bg-red-900 hover:text-white transition-all text-xs active:scale-[0.98] shadow-sm uppercase"
             >
               功 德 圆 满
             </button>
@@ -205,8 +224,8 @@ const App: React.FC = () => {
         )}
       </main>
 
-      <footer className="mt-auto py-6 opacity-40 text-[9px] tracking-[0.4em] text-gray-500 text-center uppercase">
-        解签 Powered by Gemini AI
+      <footer className="mt-auto py-8 opacity-20 text-[8px] tracking-[0.6em] text-gray-500 text-center uppercase">
+        解签 POWERED BY GEMINI AI
       </footer>
     </div>
   );
