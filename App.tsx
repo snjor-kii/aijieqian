@@ -69,9 +69,10 @@ const App: React.FC = () => {
     setShowStick(false);
   };
 
-  // 辅助函数：处理签文，去掉标点并分行
-  const formatPoetry = (poetry: string) => {
-    return poetry.split(/[。，？！\s]+/).filter(line => line.trim().length > 0);
+  // 处理签文：分行并移除标点
+  const formatPoetryLines = (poetry: string) => {
+    // 匹配中文及英文标点进行分割
+    return poetry.split(/[。，？！\s、；：.?!,;:]+/).filter(line => line.trim().length > 0);
   };
 
   return (
@@ -151,7 +152,7 @@ const App: React.FC = () => {
                {currentLottery.type.slice(0,2)}
             </div>
 
-            {/* 标题部分 */}
+            {/* 标题 */}
             <div className="text-center mb-10 pt-4">
               <div className="text-[10px] tracking-[0.8em] text-red-900/30 font-bold mb-3 uppercase">第 {currentLottery.id} 签</div>
               <h2 className="text-3xl sm:text-4xl font-bold text-red-900 tracking-[0.2em] leading-tight">
@@ -161,13 +162,13 @@ const App: React.FC = () => {
             </div>
 
             <div className="space-y-10">
-              {/* 诗曰部分 - 改为一句一行，无标点 */}
+              {/* 诗曰部分 - 分行排版 */}
               <section className="text-center">
                 <h3 className="text-[10px] tracking-[0.5em] text-red-800/40 font-bold mb-6 flex justify-center items-center gap-2">
                   <span className="w-1 h-1 bg-red-800/10 rounded-full"></span> 诗 曰 <span className="w-1 h-1 bg-red-800/10 rounded-full"></span>
                 </h3>
                 <div className="flex flex-col items-center space-y-3">
-                  {formatPoetry(currentLottery.poetry).map((line, idx) => (
+                  {formatPoetryLines(currentLottery.poetry).map((line, idx) => (
                     <p key={idx} className="text-2xl sm:text-3xl font-serif tracking-[0.3em] text-gray-900 font-medium italic leading-relaxed">
                       {line}
                     </p>
@@ -175,7 +176,7 @@ const App: React.FC = () => {
                 </div>
               </section>
 
-              {/* 传统解签 */}
+              {/* 传统解签摘要 */}
               <div className="grid grid-cols-2 gap-4 border-y border-dashed border-red-900/10 py-8">
                  <div className="bg-[#f0ece2]/30 p-4 rounded-sm">
                    <h4 className="text-[10px] tracking-[0.3em] text-gray-400 font-bold mb-2 text-center">诗意</h4>
@@ -187,26 +188,21 @@ const App: React.FC = () => {
                  </div>
               </div>
 
-              {/* 各项详解 - 优化标签美感 */}
+              {/* 各项详解 - 仅展示四个核心维度 */}
               <section className="pt-2">
                 <h3 className="text-[10px] tracking-[0.5em] text-red-800/40 font-bold mb-8 text-center">各 项 详 解</h3>
                 <div className="space-y-8">
                   {aiResult.categories.map((cat, idx) => (
                     <div key={idx} className="group flex items-start gap-5 animate-fade-in" style={{ animationDelay: `${idx * 0.1}s` }}>
-                      {/* 印章式标签 - 仅保留二字，增加质感 */}
                       <div className="flex-none flex flex-col items-center">
                         <div className="w-10 h-10 bg-[#881f1c] text-white flex items-center justify-center rounded-sm shadow-md relative group-hover:scale-105 transition-transform">
-                           <span className="text-xs font-bold tracking-widest leading-none flex flex-col items-center">
+                           <span className="text-[11px] font-bold tracking-widest leading-none flex flex-col items-center">
                              {cat.label.slice(0, 2)}
                            </span>
-                           {/* 装饰边角 */}
                            <div className="absolute inset-[2px] border border-white/10 rounded-[1px]"></div>
-                           <div className="absolute inset-[4px] border border-white/5 rounded-[1px]"></div>
                         </div>
                         <div className="w-[1px] h-full bg-gradient-to-b from-red-900/20 to-transparent mt-3 flex-1"></div>
                       </div>
-                      
-                      {/* 解签内容 */}
                       <div className="flex-1 pt-1">
                         <p className="text-[13px] sm:text-sm text-gray-800 leading-[1.8] font-light text-justify">
                           {cat.content}
