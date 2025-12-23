@@ -14,7 +14,7 @@ export interface DetailedInterpretation {
 }
 
 export const getModernInterpretation = async (lottery: LotteryData): Promise<DetailedInterpretation> => {
-  // 定义基础回退数据
+  // 定义基础回退数据，严格对应用户要求的四个维度
   const fallback: DetailedInterpretation = {
     zenInsight: "机缘流转，心中所念已有回响。签文所示乃当务之急，宜静心体察，顺势而为。",
     categories: [
@@ -46,7 +46,7 @@ export const getModernInterpretation = async (lottery: LotteryData): Promise<Det
               items: {
                 type: Type.OBJECT,
                 properties: {
-                  label: { type: Type.STRING, description: "类别，如：事业、感情、财运、健康" },
+                  label: { type: Type.STRING, description: "固定为：事业、感情、财运、健康" },
                   content: { type: Type.STRING, description: "具体的深度解签建议，约50-80字" }
                 },
                 required: ["label", "content"]
@@ -67,7 +67,7 @@ export const getModernInterpretation = async (lottery: LotteryData): Promise<Det
         
         要求：
         1. zenInsight：提供一段治愈心灵的现代禅意启示。
-        2. categories：必须提供【事业】、【感情】、【财运】、【健康】四个维度的详细指引。
+        2. categories：必须严格提供且仅提供【事业】、【感情】、【财运】、【健康】这四个维度的指引，每个维度名称固定为这两个字，不要添加后缀（如不要写成“事业/学业”）。
         3. 语言风格：古雅与现代结合，语气温和。
       `,
     });
