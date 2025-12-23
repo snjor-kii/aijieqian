@@ -97,7 +97,7 @@ const App: React.FC = () => {
               onClick={handleStartDraw}
               className="px-14 py-4 bg-[#8b0000] text-white rounded-full text-lg tracking-[0.5em] shadow-2xl hover:bg-[#a00000] transition-all transform hover:scale-105 active:scale-95 border-b-4 border-[#5a0000] font-bold"
             >
-              至诚求签
+              求签
             </button>
           </div>
         )}
@@ -106,7 +106,7 @@ const App: React.FC = () => {
           <div className="flex flex-col items-center space-y-12 py-10 animate-fade-in">
             <TraditionalTube isShaking={!showStick} showStick={showStick} />
             <p className="text-[#d4af37] animate-pulse tracking-[0.3em] text-lg font-light">
-              {showStick ? '灵签已现' : '正在感应机缘...'}
+              {showStick ? '灵签已现' : '正在感应机缘'}
             </p>
           </div>
         )}
@@ -138,7 +138,7 @@ const App: React.FC = () => {
             ) : (
               <div className="flex flex-col items-center gap-3">
                 <div className="w-6 h-6 border-2 border-[#d4af37] border-t-transparent rounded-full animate-spin"></div>
-                <div className="text-[#d4af37] animate-pulse tracking-[0.4em] text-sm font-light">正在恭请 AI 解签...</div>
+                <div className="text-[#d4af37] animate-pulse tracking-[0.4em] text-sm font-light">正在由 AI 解签...</div>
               </div>
             )}
           </div>
