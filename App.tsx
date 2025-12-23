@@ -1,18 +1,18 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { AppStage, BlockStatus, LotteryData } from './types';
 import { LOTTERY_DATABASE } from './constants';
 import ZenBackground from './components/ZenBackground';
 import DivinationBlocks from './components/DivinationBlocks';
 import TraditionalTube from './components/TraditionalTube';
-import { getModernInterpretation } from './services/geminiService';
+import { getModernInterpretation, DetailedInterpretation } from './services/geminiService';
 
 const App: React.FC = () => {
   const [stage, setStage] = useState<AppStage>(AppStage.INIT);
   const [currentLottery, setCurrentLottery] = useState<LotteryData | null>(null);
   const [blockStatus, setBlockStatus] = useState<BlockStatus>(BlockStatus.UNTHROWN);
   const [isThrowing, setIsThrowing] = useState(false);
-  const [aiInsight, setAiInsight] = useState<string>('');
+  const [aiResult, setAiResult] = useState<DetailedInterpretation | null>(null);
   const [isLoadingInsight, setIsLoadingInsight] = useState(false);
   const [showStick, setShowStick] = useState(false);
 
@@ -48,8 +48,8 @@ const App: React.FC = () => {
       if (newStatus === BlockStatus.HOLY) {
         setIsLoadingInsight(true);
         if (currentLottery) {
-          getModernInterpretation(currentLottery).then(insight => {
-            setAiInsight(insight);
+          getModernInterpretation(currentLottery).then(result => {
+            setAiResult(result);
             setIsLoadingInsight(false);
             setStage(AppStage.RESULT);
           });
@@ -62,7 +62,7 @@ const App: React.FC = () => {
     setStage(AppStage.INIT);
     setBlockStatus(BlockStatus.UNTHROWN);
     setCurrentLottery(null);
-    setAiInsight('');
+    setAiResult(null);
     setShowStick(false);
   };
 
@@ -99,7 +99,7 @@ const App: React.FC = () => {
           <div className="flex flex-col items-center space-y-12 py-10 animate-fade-in">
             <TraditionalTube isShaking={!showStick} showStick={showStick} />
             <p className="text-[#d4af37] animate-pulse tracking-[0.2em] text-base font-light">
-              {showStick ? '灵签已现，待圣杯确之' : '签筒摇动，机缘感应中'}
+              {showStick ? '灵签已现，待圣杯确之' : '签筒摇动，机缘感应中...'}
             </p>
           </div>
         )}
@@ -137,8 +137,8 @@ const App: React.FC = () => {
           </div>
         )}
 
-        {stage === AppStage.RESULT && currentLottery && (
-          <div className="w-full max-w-md bg-[#fdfaf1] paper-texture rounded-sm shadow-2xl p-6 sm:p-10 text-gray-800 animate-fade-in ink-fade-in relative mb-10">
+        {stage === AppStage.RESULT && currentLottery && aiResult && (
+          <div className="w-full max-w-md bg-[#fdfaf1] paper-texture rounded-sm shadow-2xl p-6 sm:p-10 text-gray-800 animate-fade-in ink-fade-in relative mb-10 border border-[#d4af37]/20">
             <div className="absolute top-0 right-6 w-7 h-10 bg-red-700/90 rounded-b-sm flex items-center justify-center text-white text-[10px] font-bold shadow-sm">
                {currentLottery.type}
             </div>
@@ -152,28 +152,45 @@ const App: React.FC = () => {
                 <h3 className="text-[10px] uppercase tracking-[0.2em] text-red-800/60 font-bold mb-3 flex items-center gap-2">
                   <span className="w-1 h-1 bg-red-800 rounded-full"></span> 诗曰
                 </h3>
-                <p className="text-lg sm:text-2xl leading-relaxed text-center font-serif tracking-widest text-gray-900 px-2">
+                <p className="text-lg sm:text-2xl leading-relaxed text-center font-serif tracking-widest text-gray-900 px-2 font-bold italic">
                   {currentLottery.poetry}
                 </p>
               </section>
 
               <div className="grid grid-cols-2 gap-3">
-                 <section className="bg-gray-800/5 p-3 rounded-sm border border-gray-200/50">
-                   <h3 className="text-[9px] uppercase tracking-widest text-gray-500 font-bold mb-1">诗意</h3>
+                 <div className="bg-gray-800/5 p-3 rounded-sm border border-gray-200/50">
+                   <h4 className="text-[9px] uppercase tracking-widest text-gray-500 font-bold mb-1">诗意</h4>
                    <p className="text-[11px] sm:text-xs text-gray-700 leading-normal">{currentLottery.meaning}</p>
-                 </section>
-                 <section className="bg-gray-800/5 p-3 rounded-sm border border-gray-200/50">
-                   <h3 className="text-[9px] uppercase tracking-widest text-gray-500 font-bold mb-1">解曰</h3>
+                 </div>
+                 <div className="bg-gray-800/5 p-3 rounded-sm border border-gray-200/50">
+                   <h4 className="text-[9px] uppercase tracking-widest text-gray-500 font-bold mb-1">解曰</h4>
                    <p className="text-[11px] sm:text-xs text-gray-700 leading-normal">{currentLottery.explanation}</p>
-                 </section>
+                 </div>
               </div>
 
+              {/* 深度解签展示 */}
               <section className="border-t border-dashed border-red-900/20 pt-5">
-                 <h3 className="text-[10px] uppercase tracking-[0.2em] text-red-800/60 font-bold mb-3 flex items-center gap-2">
-                  <span className="w-1 h-1 bg-red-800 rounded-full"></span> 禅悟 · 当下启示
+                <h3 className="text-[10px] uppercase tracking-[0.2em] text-red-800/60 font-bold mb-4 flex items-center gap-2">
+                  <span className="w-1 h-1 bg-red-800 rounded-full"></span> 各项详解
                 </h3>
-                <p className="text-sm sm:text-base text-gray-800 leading-relaxed font-light italic bg-white/40 p-3 rounded-sm border border-red-900/5">
-                  {aiInsight}
+                <div className="grid grid-cols-1 gap-4">
+                  {aiResult.categories.map((cat, idx) => (
+                    <div key={idx} className="flex gap-3">
+                      <div className="flex-none w-10 h-10 rounded-full bg-red-900/5 border border-red-900/10 flex items-center justify-center text-[10px] font-bold text-red-900">
+                        {cat.label}
+                      </div>
+                      <div className="flex-1 text-[11px] sm:text-xs text-gray-700 leading-relaxed border-b border-gray-100 pb-2">
+                        {cat.content}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </section>
+
+              <section className="bg-red-900/5 p-4 rounded-sm border border-red-900/10 mt-4">
+                 <h3 className="text-[10px] uppercase tracking-[0.2em] text-red-800/60 font-bold mb-2">禅悟 · 当下启示</h3>
+                <p className="text-sm text-gray-800 leading-relaxed font-light italic">
+                  {aiResult.zenInsight}
                 </p>
               </section>
             </div>
