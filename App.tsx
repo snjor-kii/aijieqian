@@ -69,6 +69,11 @@ const App: React.FC = () => {
     setShowStick(false);
   };
 
+  // 辅助函数：处理签文，去掉标点并分行
+  const formatPoetry = (poetry: string) => {
+    return poetry.split(/[。，？！\s]+/).filter(line => line.trim().length > 0);
+  };
+
   return (
     <div className="min-h-screen relative flex flex-col items-center p-4 sm:p-12 overflow-y-auto scroll-hide">
       <ZenBackground />
@@ -101,7 +106,7 @@ const App: React.FC = () => {
           <div className="flex flex-col items-center space-y-12 py-10 animate-fade-in">
             <TraditionalTube isShaking={!showStick} showStick={showStick} />
             <p className="text-[#d4af37] animate-pulse tracking-[0.3em] text-lg font-light">
-              {showStick ? '灵签已现' : '正在感应机缘'}
+              {showStick ? '灵签已现' : '正在感应机缘...'}
             </p>
           </div>
         )}
@@ -133,7 +138,7 @@ const App: React.FC = () => {
             ) : (
               <div className="flex flex-col items-center gap-3">
                 <div className="w-6 h-6 border-2 border-[#d4af37] border-t-transparent rounded-full animate-spin"></div>
-                <div className="text-[#d4af37] animate-pulse tracking-[0.4em] text-sm font-light">正在由 AI 进行解签...</div>
+                <div className="text-[#d4af37] animate-pulse tracking-[0.4em] text-sm font-light">正在恭请 AI 解签...</div>
               </div>
             )}
           </div>
@@ -156,46 +161,53 @@ const App: React.FC = () => {
             </div>
 
             <div className="space-y-10">
-              {/* 诗曰部分 */}
+              {/* 诗曰部分 - 改为一句一行，无标点 */}
               <section className="text-center">
                 <h3 className="text-[10px] tracking-[0.5em] text-red-800/40 font-bold mb-6 flex justify-center items-center gap-2">
                   <span className="w-1 h-1 bg-red-800/10 rounded-full"></span> 诗 曰 <span className="w-1 h-1 bg-red-800/10 rounded-full"></span>
                 </h3>
-                <p className="text-2xl sm:text-3xl leading-[2.2] font-serif tracking-[0.25em] text-gray-900 px-2 font-medium italic">
-                  {currentLottery.poetry}
-                </p>
+                <div className="flex flex-col items-center space-y-3">
+                  {formatPoetry(currentLottery.poetry).map((line, idx) => (
+                    <p key={idx} className="text-2xl sm:text-3xl font-serif tracking-[0.3em] text-gray-900 font-medium italic leading-relaxed">
+                      {line}
+                    </p>
+                  ))}
+                </div>
               </section>
 
               {/* 传统解签 */}
               <div className="grid grid-cols-2 gap-4 border-y border-dashed border-red-900/10 py-8">
                  <div className="bg-[#f0ece2]/30 p-4 rounded-sm">
-                   <h4 className="text-[10px] tracking-[0.3em] text-gray-400 font-bold mb-2">诗意</h4>
-                   <p className="text-xs text-gray-700 leading-relaxed">{currentLottery.meaning}</p>
+                   <h4 className="text-[10px] tracking-[0.3em] text-gray-400 font-bold mb-2 text-center">诗意</h4>
+                   <p className="text-xs text-gray-700 leading-relaxed text-center">{currentLottery.meaning}</p>
                  </div>
                  <div className="bg-[#f0ece2]/30 p-4 rounded-sm">
-                   <h4 className="text-[10px] tracking-[0.3em] text-gray-400 font-bold mb-2">解曰</h4>
-                   <p className="text-xs text-gray-700 leading-relaxed">{currentLottery.explanation}</p>
+                   <h4 className="text-[10px] tracking-[0.3em] text-gray-400 font-bold mb-2 text-center">解曰</h4>
+                   <p className="text-xs text-gray-700 leading-relaxed text-center">{currentLottery.explanation}</p>
                  </div>
               </div>
 
-              {/* 各项详解 - 重新设计的 Seal Badge 布局 */}
+              {/* 各项详解 - 优化标签美感 */}
               <section className="pt-2">
                 <h3 className="text-[10px] tracking-[0.5em] text-red-800/40 font-bold mb-8 text-center">各 项 详 解</h3>
                 <div className="space-y-8">
                   {aiResult.categories.map((cat, idx) => (
                     <div key={idx} className="group flex items-start gap-5 animate-fade-in" style={{ animationDelay: `${idx * 0.1}s` }}>
-                      {/* 印章式标签 */}
+                      {/* 印章式标签 - 仅保留二字，增加质感 */}
                       <div className="flex-none flex flex-col items-center">
-                        <div className="w-10 h-10 bg-[#881f1c] text-white flex items-center justify-center rounded-sm shadow-sm relative">
-                           <span className="text-xs font-bold tracking-tighter leading-none">{cat.label}</span>
+                        <div className="w-10 h-10 bg-[#881f1c] text-white flex items-center justify-center rounded-sm shadow-md relative group-hover:scale-105 transition-transform">
+                           <span className="text-xs font-bold tracking-widest leading-none flex flex-col items-center">
+                             {cat.label.slice(0, 2)}
+                           </span>
                            {/* 装饰边角 */}
-                           <div className="absolute top-0.5 left-0.5 right-0.5 bottom-0.5 border border-white/20 rounded-[1px]"></div>
+                           <div className="absolute inset-[2px] border border-white/10 rounded-[1px]"></div>
+                           <div className="absolute inset-[4px] border border-white/5 rounded-[1px]"></div>
                         </div>
-                        <div className="w-[1px] h-full bg-red-900/10 mt-2 flex-1"></div>
+                        <div className="w-[1px] h-full bg-gradient-to-b from-red-900/20 to-transparent mt-3 flex-1"></div>
                       </div>
                       
                       {/* 解签内容 */}
-                      <div className="flex-1">
+                      <div className="flex-1 pt-1">
                         <p className="text-[13px] sm:text-sm text-gray-800 leading-[1.8] font-light text-justify">
                           {cat.content}
                         </p>
