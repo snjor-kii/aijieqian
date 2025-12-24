@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { AppStage, BlockStatus, LotteryData } from './types';
 import { LOTTERY_DATABASE } from './constants';
 import ZenBackground from './components/ZenBackground';
@@ -16,6 +16,7 @@ const App: React.FC = () => {
   const [isLoadingInsight, setIsLoadingInsight] = useState(false);
   const [showStick, setShowStick] = useState(false);
 
+  // 核心逻辑：如果 API Key 缺失，为了保证体验，将抽签范围缩小到经过深度人工预制的前 10 签
   const handleStartDraw = () => {
     setStage(AppStage.SHAKING);
     setShowStick(false);
@@ -23,7 +24,11 @@ const App: React.FC = () => {
     setTimeout(() => {
       setShowStick(true);
       setTimeout(() => {
-        const randomIndex = Math.floor(Math.random() * LOTTERY_DATABASE.length);
+        const hasKey = !!process.env.API_KEY;
+        // 如果没有 Key，只在前 10 签中抽取（索引 0-9）
+        const maxRange = hasKey ? LOTTERY_DATABASE.length : 10;
+        const randomIndex = Math.floor(Math.random() * maxRange);
+        
         setCurrentLottery(LOTTERY_DATABASE[randomIndex]);
         setStage(AppStage.CONFIRMING);
       }, 1500);
@@ -69,9 +74,8 @@ const App: React.FC = () => {
     setShowStick(false);
   };
 
-  // 辅助函数：处理签文，去掉标点并分行
-  const formatPoetry = (poetry: string) => {
-    return poetry.split(/[。，？！\s]+/).filter(line => line.trim().length > 0);
+  const formatPoetryLines = (poetry: string) => {
+    return poetry.split(/[。，？！\s、；：.?!,;:]+/).filter(line => line.trim().length > 0);
   };
 
   return (
@@ -80,6 +84,9 @@ const App: React.FC = () => {
 
       <header className="text-center mt-4 mb-8 animate-fade-in ink-fade-in">
         <h1 className="text-4xl sm:text-5xl font-bold tracking-[0.3em] text-[#d4af37] mb-2">观音灵签</h1>
+        {!process.env.API_KEY && (
+          <div className="text-[10px] text-red-900/40 bg-red-900/5 px-2 py-1 rounded inline-block mb-2">精华预览模式</div>
+        )}
         <p className="text-[10px] sm:text-base text-gray-500 font-light tracking-widest">
           「 一方签文，千载智慧，照见古今人生路 」
         </p>
@@ -97,7 +104,7 @@ const App: React.FC = () => {
               onClick={handleStartDraw}
               className="px-14 py-4 bg-[#8b0000] text-white rounded-full text-lg tracking-[0.5em] shadow-2xl hover:bg-[#a00000] transition-all transform hover:scale-105 active:scale-95 border-b-4 border-[#5a0000] font-bold"
             >
-              求签
+              至诚求签
             </button>
           </div>
         )}
@@ -106,7 +113,7 @@ const App: React.FC = () => {
           <div className="flex flex-col items-center space-y-12 py-10 animate-fade-in">
             <TraditionalTube isShaking={!showStick} showStick={showStick} />
             <p className="text-[#d4af37] animate-pulse tracking-[0.3em] text-lg font-light">
-              {showStick ? '灵签已现' : '正在感应机缘'}
+              {showStick ? '灵签已现' : '正在感应机缘...'}
             </p>
           </div>
         )}
@@ -138,7 +145,7 @@ const App: React.FC = () => {
             ) : (
               <div className="flex flex-col items-center gap-3">
                 <div className="w-6 h-6 border-2 border-[#d4af37] border-t-transparent rounded-full animate-spin"></div>
-                <div className="text-[#d4af37] animate-pulse tracking-[0.4em] text-sm font-light">正在由 AI 解签...</div>
+                <div className="text-[#d4af37] animate-pulse tracking-[0.4em] text-sm font-light">正在恭请 AI 解签...</div>
               </div>
             )}
           </div>
@@ -146,12 +153,10 @@ const App: React.FC = () => {
 
         {stage === AppStage.RESULT && currentLottery && aiResult && (
           <div className="w-full max-w-md bg-[#fdfaf1] paper-texture rounded-sm shadow-2xl p-6 sm:p-10 text-gray-800 animate-fade-in ink-fade-in relative mb-12 border border-[#d4af37]/10">
-            {/* 签级角标 */}
             <div className="absolute top-0 right-6 w-8 h-12 bg-[#881f1c] rounded-b-sm flex items-center justify-center text-white text-[12px] font-bold shadow-md z-10">
                {currentLottery.type.slice(0,2)}
             </div>
 
-            {/* 标题部分 */}
             <div className="text-center mb-10 pt-4">
               <div className="text-[10px] tracking-[0.8em] text-red-900/30 font-bold mb-3 uppercase">第 {currentLottery.id} 签</div>
               <h2 className="text-3xl sm:text-4xl font-bold text-red-900 tracking-[0.2em] leading-tight">
@@ -161,13 +166,12 @@ const App: React.FC = () => {
             </div>
 
             <div className="space-y-10">
-              {/* 诗曰部分 - 改为一句一行，无标点 */}
               <section className="text-center">
                 <h3 className="text-[10px] tracking-[0.5em] text-red-800/40 font-bold mb-6 flex justify-center items-center gap-2">
                   <span className="w-1 h-1 bg-red-800/10 rounded-full"></span> 诗 曰 <span className="w-1 h-1 bg-red-800/10 rounded-full"></span>
                 </h3>
                 <div className="flex flex-col items-center space-y-3">
-                  {formatPoetry(currentLottery.poetry).map((line, idx) => (
+                  {formatPoetryLines(currentLottery.poetry).map((line, idx) => (
                     <p key={idx} className="text-2xl sm:text-3xl font-serif tracking-[0.3em] text-gray-900 font-medium italic leading-relaxed">
                       {line}
                     </p>
@@ -175,7 +179,6 @@ const App: React.FC = () => {
                 </div>
               </section>
 
-              {/* 传统解签 */}
               <div className="grid grid-cols-2 gap-4 border-y border-dashed border-red-900/10 py-8">
                  <div className="bg-[#f0ece2]/30 p-4 rounded-sm">
                    <h4 className="text-[10px] tracking-[0.3em] text-gray-400 font-bold mb-2 text-center">诗意</h4>
@@ -187,26 +190,20 @@ const App: React.FC = () => {
                  </div>
               </div>
 
-              {/* 各项详解 - 优化标签美感 */}
               <section className="pt-2">
                 <h3 className="text-[10px] tracking-[0.5em] text-red-800/40 font-bold mb-8 text-center">各 项 详 解</h3>
                 <div className="space-y-8">
                   {aiResult.categories.map((cat, idx) => (
                     <div key={idx} className="group flex items-start gap-5 animate-fade-in" style={{ animationDelay: `${idx * 0.1}s` }}>
-                      {/* 印章式标签 - 仅保留二字，增加质感 */}
                       <div className="flex-none flex flex-col items-center">
                         <div className="w-10 h-10 bg-[#881f1c] text-white flex items-center justify-center rounded-sm shadow-md relative group-hover:scale-105 transition-transform">
-                           <span className="text-xs font-bold tracking-widest leading-none flex flex-col items-center">
+                           <span className="text-[11px] font-bold tracking-widest leading-none flex flex-col items-center">
                              {cat.label.slice(0, 2)}
                            </span>
-                           {/* 装饰边角 */}
                            <div className="absolute inset-[2px] border border-white/10 rounded-[1px]"></div>
-                           <div className="absolute inset-[4px] border border-white/5 rounded-[1px]"></div>
                         </div>
                         <div className="w-[1px] h-full bg-gradient-to-b from-red-900/20 to-transparent mt-3 flex-1"></div>
                       </div>
-                      
-                      {/* 解签内容 */}
                       <div className="flex-1 pt-1">
                         <p className="text-[13px] sm:text-sm text-gray-800 leading-[1.8] font-light text-justify">
                           {cat.content}
@@ -217,7 +214,6 @@ const App: React.FC = () => {
                 </div>
               </section>
 
-              {/* 禅悟启示 */}
               <section className="bg-red-900/[0.03] p-8 rounded-sm border border-red-900/5 mt-4 shadow-inner">
                 <h3 className="text-[10px] tracking-[0.5em] text-red-800/50 font-bold mb-4 text-center">禅 悟 · 当 下 启 示</h3>
                 <p className="text-base text-gray-800 leading-[2] font-light italic text-justify">
