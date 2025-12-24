@@ -145,7 +145,7 @@ const App: React.FC = () => {
             ) : (
               <div className="flex flex-col items-center gap-3">
                 <div className="w-6 h-6 border-2 border-[#d4af37] border-t-transparent rounded-full animate-spin"></div>
-                <div className="text-[#d4af37] animate-pulse tracking-[0.4em] text-sm font-light">正在恭请 AI 解签...</div>
+                <div className="text-[#d4af37] animate-pulse tracking-[0.4em] text-sm font-light">正在由 AI 解签...</div>
               </div>
             )}
           </div>
@@ -233,7 +233,7 @@ const App: React.FC = () => {
       </main>
 
       <footer className="mt-auto py-8 opacity-20 text-[8px] tracking-[0.6em] text-gray-500 text-center uppercase">
-        解签 POWERED BY GEMINI AI
+        解签 POWERED BY DeepSeek AI
       </footer>
     </div>
   );
