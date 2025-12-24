@@ -1,5 +1,3 @@
-
-import { GoogleGenAI, Type } from "@google/genai";
 import { LotteryData } from "../types";
 
 export interface DetailedInterpretation {
@@ -11,9 +9,6 @@ export interface DetailedInterpretation {
 }
 
 export const getModernInterpretation = async (lottery: LotteryData): Promise<DetailedInterpretation> => {
-  // 核心修复：在函数内部初始化，确保获取最新的 process.env.API_KEY
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-
   const fallback: DetailedInterpretation = {
     zenInsight: "机缘流转，心中所念已有回响。签文所示乃当务之急，宜静心体察，顺势而为。",
     categories: [
@@ -25,56 +20,84 @@ export const getModernInterpretation = async (lottery: LotteryData): Promise<Det
   };
 
   try {
-    if (!process.env.API_KEY) {
-      console.warn("API_KEY not found in environment.");
+    const apiKey = process.env.DEEPSEEK_API_KEY || process.env.API_KEY;
+    
+    if (!apiKey) {
+      console.warn("DEEPSEEK_API_KEY not found in environment.");
       return fallback;
     }
 
-    const response = await ai.models.generateContent({
-      model: "gemini-3-flash-preview",
-      config: {
-        responseMimeType: "application/json",
-        responseSchema: {
-          type: Type.OBJECT,
-          properties: {
-            zenInsight: { 
-              type: Type.STRING, 
-              description: "针对签意的现代禅悟启示，充满智慧且字数约120字。" 
-            },
-            categories: {
-              type: Type.ARRAY,
-              items: {
-                type: Type.OBJECT,
-                properties: {
-                  label: { type: Type.STRING, description: "只能是：事业、感情、财运、健康" },
-                  content: { type: Type.STRING, description: "具体的深度解签建议，约60字" }
-                },
-                required: ["label", "content"]
-              }
-            }
-          },
-          required: ["zenInsight", "categories"]
-        }
+    const prompt = `你是一位精通传统文化、佛学禅意与现代心理学的解签大师。
+请针对观音灵签第${lottery.id}签《${lottery.title}》提供详尽的深度解签。
+
+签文数据：
+诗文：${lottery.poetry}
+诗意：${lottery.meaning}
+解曰：${lottery.explanation}
+
+请以 JSON 格式返回，包含以下字段：
+1. zenInsight：提供一段治愈心灵的现代禅意启示（约120字）
+2. categories：数组，必须包含且仅包含【事业】、【感情】、【财运】、【健康】这四个维度
+   每个元素包含：
+   - label: 维度名称（事业/感情/财运/健康）
+   - content: 具体的深度解签建议（约60字）
+
+语言风格：禅意深远，古雅温和。
+
+请严格按照以下 JSON 格式返回：
+{
+  "zenInsight": "...",
+  "categories": [
+    {"label": "事业", "content": "..."},
+    {"label": "感情", "content": "..."},
+    {"label": "财运", "content": "..."},
+    {"label": "健康", "content": "..."}
+  ]
+}`;
+
+    const response = await fetch('https://api.deepseek.com/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`
       },
-      contents: `
-        你是一位精通传统文化、佛学禅意与现代心理学的解签大师。
-        请针对观音灵签第${lottery.id}签《${lottery.title}》提供详尽的深度解签。
-        
-        签文数据：
-        诗文：${lottery.poetry}
-        诗意：${lottery.meaning}
-        解曰：${lottery.explanation}
-        
-        要求：
-        1. zenInsight：提供一段治愈心灵的现代禅意启示。
-        2. categories：必须严格提供且仅提供【事业】、【感情】、【财运】、【健康】这四个维度的指引，每个名称严格为两个字。
-        3. 语言风格：禅意深远，古雅温和。
-      `,
+      body: JSON.stringify({
+        model: 'deepseek-chat',
+        messages: [
+          {
+            role: 'system',
+            content: '你是一位精通传统文化、佛学禅意与现代心理学的解签大师。请严格按照要求以 JSON 格式返回结果。'
+          },
+          {
+            role: 'user',
+            content: prompt
+          }
+        ],
+        temperature: 0.7,
+        response_format: { type: 'json_object' }
+      })
     });
 
-    const text = response.text;
-    if (!text) throw new Error("Empty response from AI");
-    return JSON.parse(text);
+    if (!response.ok) {
+      throw new Error(`DeepSeek API error: ${response.status} ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    const text = data.choices?.[0]?.message?.content;
+
+    if (!text) {
+      throw new Error("Empty response from DeepSeek API");
+    }
+
+    const result = JSON.parse(text);
+    
+    // 验证返回格式
+    if (!result.zenInsight || !Array.isArray(result.categories)) {
+      throw new Error("Invalid response format");
+    }
+
+    return result;
+
   } catch (error) {
     console.error("AI Interpretation Error:", error);
     return fallback;
