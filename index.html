@@ -10,21 +10,11 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;400;700&display=swap" rel="stylesheet">
     <style>
-        /* 针对 iOS 优化字体栈：显式指定系统衬线体回退 */
         body {
-            font-family: 'Noto Serif SC', 'Source Han Serif SC', 'Source Han Serif CN', 'STSong', 'Songti SC', 'SimSun', serif;
+            font-family: 'Noto Serif SC', serif;
             background-color: #1a1a1a;
             color: #d4cfc3;
             -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
-            /* 防止 iOS 横屏字体自动放大 */
-            -webkit-text-size-adjust: 100%;
-            text-rendering: optimizeLegibility;
-        }
-
-        /* 确保 Tailwind 的 font-serif 类在 iOS 上也能正确回退到中文字符集 */
-        .font-serif {
-            font-family: 'Noto Serif SC', 'Source Han Serif SC', 'Source Han Serif CN', 'STSong', 'Songti SC', 'SimSun', serif !important;
         }
         
         /* 经典签筒样式 */
